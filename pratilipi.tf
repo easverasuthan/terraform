@@ -45,8 +45,8 @@ resource "aws_route_table" "prod-public-crt" {
     }
 }
 
-resource "aws_security_group" "pratilipi" {
-    vpc_id = "${aws_vpc.pratilipi-vpc.id}"
+resource "aws_security_group" "Egnyte" {
+    vpc_id = "${aws_vpc.Egnyte-vpc.id}"
     
     egress {
         from_port = 0
@@ -68,7 +68,7 @@ resource "aws_security_group" "pratilipi" {
     cidr_blocks = ["0.0.0.0/0"]
   }
     tags = {
-        Name = "pratilipi"
+        Name = "Egnyte"
     }
 }
 
@@ -77,21 +77,32 @@ resource "aws_route_table_association" "prod-crta-public-subnet-1"{
     route_table_id = "${aws_route_table.prod-public-crt.id}"
 }
 
-resource "aws_instance" "jenkins" {
-    ami = "ami-04d29b6f966df1537"
+resource "aws_instance" "Egnyte" {
+    count= "5"
+    ami = "ami-00008506813cea27a"
     instance_type = "t2.micro"
-    key_name = "pratilipi"
+    key_name = "Egnyte"
     tags = {
-     Name = "Jenkins"
+     Name = "Egnyte"
     }
     # VPC
     subnet_id = "${aws_subnet.prod-subnet-public-1.id}"
     # Security Group
-    vpc_security_group_ids = ["${aws_security_group.pratilipi.id}"]
+    vpc_security_group_ids = ["${aws_security_group.Egnyte.id}"]
+    provisioner "file" {
+    source="script.sh"
+    destination="/tmp/script.sh"
+    }
+    provisioner "remote-exec" {
+    inline=[
+    "chmod +x /tmp/script.sh",
+    "sudo /tmp/script.sh"
+    ]
+    }
     connection {
     type = "ssh"
     user = "ec2-user"
-    private_key = file("/home/ec2-user/pratilipi.pem")
-    host = aws_instance.jenkins.public_ip
+    private_key = file("/home/ec2-user/Egnyte.pem")
+    host = aws_instance.Egnyte.public_ip
   }
 }
